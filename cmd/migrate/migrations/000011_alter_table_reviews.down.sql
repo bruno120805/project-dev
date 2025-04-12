@@ -1,0 +1,8 @@
+ALTER TABLE
+  reviews DROP COLUMN IF EXISTS created_at;
+
+ALTER TABLE
+  reviews DROP CONSTRAINT IF EXISTS fk_professor;
+
+ALTER TABLE
+  reviews DROP CONSTRAINT IF EXISTS fk_user;

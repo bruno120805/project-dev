@@ -1,0 +1,290 @@
+basePath: /v1
+definitions:
+  main.CreateNotePayload:
+    properties:
+      content:
+        type: string
+      files_url:
+        items:
+          type: string
+        type: array
+      professor_id:
+        type: integer
+      subject:
+        type: string
+      title:
+        type: string
+    required:
+      - content
+      - subject
+      - title
+    type: object
+  main.LoginUserPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        type: string
+    required:
+      - email
+      - password
+    type: object
+  main.RegisterUserPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 6
+        type: string
+      username:
+        maxLength: 60
+        type: string
+    required:
+      - email
+      - password
+      - username
+    type: object
+  store.Role:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+    type: object
+  store.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: "#/definitions/store.Role"
+      role_id:
+        type: integer
+      username:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API for Gopher
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Gopher
+paths:
+  /authentication/token:
+    post:
+      consumes:
+        - application/json
+      description: Creates a token for a user
+      parameters:
+        - description: User credentials
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/main.LoginUserPayload"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: JWT token for authentication
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Creates a token for a user (login)
+      tags:
+        - authentication
+  /authentication/user:
+    post:
+      consumes:
+        - application/json
+      description: Register a new user
+      parameters:
+        - description: User credentials
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/main.RegisterUserPayload"
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: User registered
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+      security:
+        - ApiKeyAuth: []
+      summary: Registers a user
+      tags:
+        - authentication
+  /notes/{professorID}:
+    post:
+      consumes:
+        - application/json
+      description: Creates a note where the user can upload files
+      parameters:
+        - description: professor ID
+          in: path
+          name: professorID
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.CreateNotePayload"
+      security:
+        - ApiKeyAuth: []
+      summary: Creates a note
+      tags:
+        - notes
+  /school/{schoolID}:
+    get:
+      consumes:
+        - application/json
+      description: Gets a school by ID
+      parameters:
+        - description: School ID
+          in: path
+          name: SchoolID
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: good
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+      security:
+        - ApiKeyAuth: []
+      summary: Gets a school
+      tags:
+        - schools
+  /search/school:
+    get:
+      consumes:
+        - application/json
+      description: Gets a school by its name
+      parameters:
+        - description: School Name
+          in: query
+          name: q
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+      security:
+        - ApiKeyAuth: []
+      summary: Gets all schools by similar name
+      tags:
+        - search
+  /users/{userID}:
+    get:
+      consumes:
+        - application/json
+      description: Fetches a user profile by ID
+      parameters:
+        - description: User ID
+          in: path
+          name: userID
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/store.User"
+      security:
+        - ApiKeyAuth: []
+      summary: Fetches a user profile
+      tags:
+        - users
+  /users/activate/{token}:
+    put:
+      consumes:
+        - application/json
+      description: Activates/Register a user by invitation token
+      parameters:
+        - description: Invitation token
+          in: path
+          name: token
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: User activated
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+      security:
+        - ApiKeyAuth: []
+      summary: Activates/Register a user
+      tags:
+        - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

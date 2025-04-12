@@ -1,0 +1,9 @@
+ALTER TABLE
+  reviews
+ADD
+  COLUMN rating INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE
+  reviews
+ADD
+  COLUMN would_take_again BOOLEAN NOT NULL DEFAULT FALSE;
