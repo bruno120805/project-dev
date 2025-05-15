@@ -1,3 +1,5 @@
 .env
 tmp
 .vscode
+bin
+binfc22
