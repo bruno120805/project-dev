@@ -60,7 +60,7 @@ func main() {
 		auth: authConfig{
 			token: tokenConfig{
 				secret: env.GetString("JWT_SECRET", "example"),
-				exp:    time.Hour * 24 * 3,
+				exp:    time.Hour * 24,
 				iss:    "project",
 			},
 		},

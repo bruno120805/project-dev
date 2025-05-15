@@ -1,17 +1,22 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/bruno120805/project/internal/mail"
 	"github.com/bruno120805/project/internal/store"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/markbates/goth/gothic"
+	"golang.org/x/oauth2"
 )
 
 type RegisterUserPayload struct {
@@ -72,7 +77,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	hashedToken := hex.EncodeToString(hash[:])
 
 	// store the user
-	if err := app.store.Users.CreateAndInvite(ctx, user, hashedToken, app.config.mail.exp); err != nil {
+	if err = app.store.Users.CreateAndInvite(ctx, user, hashedToken, app.config.mail.exp); err != nil {
 		switch err {
 		case store.ErrDuplicateEmail:
 			app.badRequestResponse(w, r, err)
@@ -106,7 +111,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.logger.Errorw("error sending welcome email", "error", err)
 
 		// rollback user creation if emails fails (SAGA pattern)
-		if err := app.store.Users.Delete(ctx, user.ID); err != nil {
+		if err = app.store.Users.Delete(ctx, user.ID); err != nil {
 			app.logger.Errorw("error deleting user", "error", err)
 		}
 		app.internalServerError(w, r, err)
@@ -166,7 +171,7 @@ func (app *application) loginUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := user.Password.Compare(payload.Password); err != nil {
+	if err = user.Password.Compare(payload.Password); err != nil {
 		app.unauthorizedResponse(w, r, err)
 		return
 	}
@@ -199,7 +204,6 @@ func (app *application) loginUserHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *application) authUserHandler(w http.ResponseWriter, r *http.Request) {
-
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		app.unauthorizedResponse(w, r, fmt.Errorf("missing Authorization header"))
@@ -237,6 +241,120 @@ func (app *application) authUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+func (app *application) getAuthCallBackFunction(w http.ResponseWriter, r *http.Request) {
+	provider := chi.URLParam(r, "provider")
+	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
+
+	user, err := gothic.CompleteUserAuth(w, r)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	session, err := gothic.Store.Get(r, "session")
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	usr := &store.User{
+		Username: user.FirstName,
+		Email:    user.Email,
+		IsActive: true,
+	}
+
+	ctx := r.Context()
+
+	if _, err = app.store.Users.GetUserByID(ctx, usr.ID); err != nil {
+		err = app.store.Users.CreateOrUpdateUser(ctx, usr)
+		if err != nil {
+			app.badRequestResponse(w, r, err)
+			return
+		}
+	}
+
+	// Generamos un nuevo token para asi autenticar al usuario
+	claims := jwt.MapClaims{
+		"sub": usr.ID,
+		"exp": time.Now().Add(app.config.auth.token.exp).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": app.config.auth.token.iss,
+		"aud": app.config.auth.token.iss,
+	}
+
+	token, err := app.authenticator.GenerateToken(claims)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	// Guardamos el usuario en la sesion
+	session.Values["userID"] = usr.ID
+	session.Values["username"] = usr.Username
+	session.Values["email"] = usr.Email
+
+	// Guarda sesión (esto genera la cookie)
+	if err := session.Save(r, w); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	fmt.Println("token:", token)
+	redirectURL := fmt.Sprintf("%s?token=%s", app.config.frontendURL, token)
+	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
+}
+
+func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := gothic.Store.Get(r, "session")
+	if err != nil {
+		log.Println(err)
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	session.Options.MaxAge = -1
+
+	session.Save(r, w)
+}
+
+func (app *application) beginAuthProviderCallback(w http.ResponseWriter, r *http.Request) {
+	if gothUser, err := gothic.CompleteUserAuth(w, r); err == nil {
+		// TODO: Handle the authenticated user
+		fmt.Println(gothUser)
+	} else {
+		gothic.BeginAuthHandler(w, r)
+	}
+}
+
+func (app *application) getAuthCallback(w http.ResponseWriter, r *http.Request) {
+	url := app.config.oauth.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	http.Redirect(w, r, url, http.StatusFound)
+}
+
+func (app *application) getCurrentUser(w http.ResponseWriter, r *http.Request) {
+	session, err := gothic.Store.Get(r, "session")
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	userID, _ := session.Values["userID"].(int64)
+	username, _ := session.Values["username"].(string)
+	email, _ := session.Values["email"].(string)
+
+	resp := map[string]interface{}{
+		"userID":   userID,
+		"username": username,
+		"email":    email,
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, resp); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}

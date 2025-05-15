@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
 )
 
 type contextKey string
@@ -16,51 +18,46 @@ const userKey contextKey = "user"
 
 func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Get the token from the Authorization header
+		// TODO: Implementar la sesión de Google
 		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
+		if authHeader != "" {
+			// Si el header está presente, valida el JWT
+			parts := strings.Split(authHeader, " ")
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
+				return
+			}
+
+			token := parts[1]
+
+			// Valida el token
+			jwtToken, err := app.authenticator.ValidateToken(token)
+			if err != nil {
+				app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
+				return
+			}
+
+			claims := jwtToken.Claims.(jwt.MapClaims)
+			userID, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["sub"]), 10, 64)
+			if err != nil {
+				app.unauthorizedResponse(w, r, err)
+				return
+			}
+
+			// Recupera el usuario desde la base de datos
+			ctx := r.Context()
+			user, err := app.store.Users.GetUserByID(ctx, userID)
+			if err != nil {
+				app.unauthorizedResponse(w, r, err)
+				return
+			}
+
+			// Agrega el usuario al contexto
+			ctx = context.WithValue(ctx, userKey, user)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
-
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
-			return
-		}
-
-		token := parts[1]
-
-		// Validate the token
-
-		jwtToken, err := app.authenticator.ValidateToken(token)
-		if err != nil {
-			app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
-			return
-		}
-
-		claims := jwtToken.Claims.(jwt.MapClaims)
-
-		userID, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["sub"]), 10, 64)
-		if err != nil {
-			app.unauthorizedResponse(w, r, err)
-			return
-		}
-
-		ctx := r.Context()
-
-		user, err := app.store.Users.GetUserByID(ctx, userID)
-		if err != nil {
-			app.unauthorizedResponse(w, r, err)
-			return
-		}
-
-		// Add the userID to the context
-		ctx = context.WithValue(ctx, userKey, user)
-
-		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-
 }
 
 func (app *application) checkPostOwnership(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
@@ -83,4 +80,24 @@ func (app *application) checkPostOwnership(requiredRole string, next http.Handle
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// func(app *application) getSessionUser(r *http.Request) *User {
+//   session, _ := gothic.Store.Get(r, "session")
+//   if user, ok := session.Values["userID"]
+// }
+
+func (app *application) getSessionUser(r *http.Request) (goth.User, error) {
+	session, err := gothic.Store.Get(r, "session")
+	if err != nil {
+		return goth.User{}, err
+	}
+
+	fmt.Printf("Session: %+v", session)
+	u := session.Values["user"]
+	if u == nil {
+		return goth.User{}, fmt.Errorf("user is not authenticated")
+	}
+
+	return u.(goth.User), nil
 }

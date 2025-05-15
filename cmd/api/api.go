@@ -121,11 +121,12 @@ func (app *application) mount() http.Handler {
 
 		// NOTES ROUTES
 		r.Route("/notes", func(r chi.Router) {
+			// TODO: add auth middleware to notes routes
 			r.Use(app.AuthTokenMiddleware)
 			r.Get("/{professorID}", app.getNotesHandler)
 			r.Post("/{professorID}", app.createNoteHandler)
 			r.Delete("/{noteID}", app.deleteNoteHandler)
-			// r.Get("/{noteID}", app.getNoteByID)
+			r.Get("/{noteID}/view", app.getNoteByID)
 		})
 
 		r.Route("/professor", func(r chi.Router) {
@@ -153,10 +154,11 @@ func (app *application) mount() http.Handler {
 
 		// AUTH ROUTES
 		r.Route("/auth", func(r chi.Router) {
-			r.Get("/{provider}/callback", app.getAuthCallbackFunction)
-			r.Get("/logout/{provider}", app.logoutHandler)
 			r.Get("/{provider}", app.beginAuthProviderCallback)
+			r.Get("/{provider}/callback", app.getAuthCallBackFunction)
+			r.Get("/logout/{provider}", app.logoutHandler)
 			r.Get("/oauth", app.getAuthCallback)
+			r.Get("/me", app.getCurrentUser)
 			r.Post("/register", app.registerUserHandler)
 			r.Post("/login", app.loginUserHandler)
 			r.Get("/user", app.authUserHandler)
@@ -167,7 +169,6 @@ func (app *application) mount() http.Handler {
 }
 
 func (app *application) run(mux http.Handler) error {
-
 	docs.SwaggerInfo.Version = version
 	docs.SwaggerInfo.Host = app.config.apiURL
 	docs.SwaggerInfo.BasePath = "/v1"

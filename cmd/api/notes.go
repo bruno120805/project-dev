@@ -37,6 +37,7 @@ type CreateNotePayload struct {
 //	@Security		ApiKeyAuth
 //	@Router			/notes/{professorID} [post]
 func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("createNoteHandler")
 	var payload CreateNotePayload
 	professorID, err := strconv.ParseInt(chi.URLParam(r, "professorID"), 10, 64)
 	if err != nil {
@@ -46,7 +47,7 @@ func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 
-	if _, err := app.store.Professors.GetByID(ctx, professorID); err != nil {
+	if _, err = app.store.Professors.GetByID(ctx, professorID); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			app.notFoundResponse(w, r, err)
 			return
@@ -65,7 +66,7 @@ func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request
 	payload.Subject = r.FormValue("subject")
 	payload.Title = r.FormValue("title")
 
-	if err := Validate.Struct(payload); err != nil {
+	if err = Validate.Struct(payload); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
@@ -81,6 +82,16 @@ func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request
 	var fileURLs []string
 
 	for _, handler := range files {
+		if handler == nil {
+			app.badRequestResponse(w, r, fmt.Errorf("no file handler provided"))
+			return
+		}
+
+		if handler.Filename == "" {
+			app.badRequestResponse(w, r, fmt.Errorf("no file name provided"))
+			return
+		}
+
 		if !isValidExtension(handler.Filename) {
 			app.badRequestResponse(w, r, fmt.Errorf("invalid file extension"))
 			return
@@ -107,6 +118,7 @@ func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request
 		}
 
 		// save URL to database
+
 		fileURL := fmt.Sprintf("https://%s.s3.amazonaws.com/%s", app.config.uploader.bucket, key)
 		fileURLs = append(fileURLs, fileURL)
 

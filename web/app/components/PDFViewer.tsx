@@ -1,0 +1,52 @@
+"use client";
+import { useState } from "react";
+import { Document, Page } from "react-pdf";
+import { pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+export default function PDFViewer({ fileUrl }: { fileUrl: string }) {
+  const [numPages, setNumPages] = useState<number>();
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [scale, setScale] = useState<number>(1.0);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    setNumPages(numPages);
+  }
+
+  const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 3));
+  const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.5));
+
+  return (
+    <div>
+      <div className="flex justify-center gap-4 mb-4">
+        <button onClick={zoomOut} className="px-4 py-2 bg-gray-200 rounded">
+          -
+        </button>
+        <span>Zoom: {(scale * 100).toFixed(0)}%</span>
+        <button onClick={zoomIn} className="px-4 py-2 bg-gray-200 rounded">
+          +
+        </button>
+      </div>
+      <Document
+        file={fileUrl}
+        className="w-full h-full"
+        onLoadSuccess={onDocumentLoadSuccess}
+      >
+        {Array.from({ length: numPages }, (_, index) => (
+          <Page
+            key={`page_${index + 1}`}
+            pageNumber={pageNumber + index}
+            scale={scale}
+            className="w-1/2 h-1/2 mx-auto"
+          />
+        ))}
+      </Document>
+      <p>
+        Page {pageNumber} of {numPages}
+      </p>
+    </div>
+  );
+}

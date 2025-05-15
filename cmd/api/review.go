@@ -57,5 +57,4 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 	if err := app.jsonResponse(w, http.StatusCreated, review); err != nil {
 		app.internalServerError(w, r, err)
 	}
-
 }
