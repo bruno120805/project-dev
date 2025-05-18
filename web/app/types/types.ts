@@ -1,71 +1,106 @@
-export interface Login {
-  email: string;
-  password: string;
-}
+import { z } from "zod";
 
-export type SignUp = Login & {
-  name: string;
-};
+// Login
+export const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+export type Login = z.infer<typeof LoginSchema>;
 
-export interface Note {
-  id: number;
-  subject: string;
-  title: string;
-  Content: string;
-  files_url: string[];
-  user_id: number;
-  professor_id: number;
-  created_at: string;
-}
+// SignUp
+export const SignUpSchema = LoginSchema.extend({
+  name: z.string().min(2),
+});
+export type SignUp = z.infer<typeof SignUpSchema>;
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  role?: Role;
-  created_at?: string;
-  is_active?: boolean;
-  role_id?: number;
-}
+// Note
+export const NoteSchema = z.object({
+  id: z.number(),
+  subject: z.string(),
+  title: z.string(),
+  Content: z.string(),
+  files_url: z.array(z.string().url()),
+  user_id: z.number(),
+  professor_id: z.number(),
+  created_at: z.string(), // o z.coerce.date() si deseas convertir string a Date
+});
+export type Note = z.infer<typeof NoteSchema>;
 
-export type UserAuth = Pick<User, "id" | "username" | "email">;
+// Role
+export const RoleSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  level: z.number(),
+  description: z.string(),
+});
+export type Role = z.infer<typeof RoleSchema>;
 
-export interface Role {
-  description: string;
-  id: number;
-  level: number;
-  name: string;
-}
+// User
+export const UserSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  email: z.string().email(),
+  role: RoleSchema.optional(),
+  created_at: z.string().optional(),
+  is_active: z.boolean().optional(),
+  role_id: z.number().optional(),
+});
+export type User = z.infer<typeof UserSchema>;
 
-export interface Professor {
-  id: number;
-  name: string;
-  subject: string;
-  total_reviews: number;
-  school_id: number;
-  text?: string;
-}
+// UserAuth (Pick)
+export const UserAuthSchema = UserSchema.pick({
+  id: true,
+  username: true,
+  email: true,
+});
+export type UserAuth = z.infer<typeof UserAuthSchema>;
 
-export interface Review {
-  id: number;
-  text: string;
-  subject: string;
-  difficulty: number;
-  created_at: string;
-  professorName: string;
-  rating: number;
-  would_take_again: boolean;
-}
+// Professor
+export const ProfessorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  subject: z.string(),
+  total_reviews: z.number(),
+  school_id: z.number(),
+  text: z.string().optional(),
+});
+export type Professor = z.infer<typeof ProfessorSchema>;
 
-export type ReviewForm = Omit<Review, "id" | "created_at" | "professorName">;
+// Review
+export const ReviewSchema = z.object({
+  id: z.number(),
+  text: z.string(),
+  subject: z.string(),
+  difficulty: z.number().min(1).max(5),
+  created_at: z.string(),
+  professorName: z.string(),
+  rating: z.number().min(1).max(5),
+  would_take_again: z.boolean(),
+});
+export type Review = z.infer<typeof ReviewSchema>;
 
-export interface School {
-  id: number;
-  name: string;
-  total_reviews: number;
-  professors: Professor[];
-  address: string;
-  total_professors: number;
-}
+// ReviewForm (Omit)
+export const ReviewFormSchema = ReviewSchema.omit({
+  id: true,
+  created_at: true,
+  professorName: true,
+});
+export type ReviewForm = z.infer<typeof ReviewFormSchema>;
 
-export type RandomSchool = Pick<School, "id" | "name">;
+// School
+export const SchoolSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  total_reviews: z.number(),
+  professors: z.array(ProfessorSchema),
+  address: z.string(),
+  total_professors: z.number(),
+});
+export type School = z.infer<typeof SchoolSchema>;
+
+// RandomSchool (Pick)
+export const RandomSchoolSchema = SchoolSchema.pick({
+  id: true,
+  name: true,
+});
+export type RandomSchool = z.infer<typeof RandomSchoolSchema>;
