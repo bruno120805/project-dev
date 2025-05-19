@@ -11,21 +11,21 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type * as React from "react";
 import { useAuth } from "../context/AuthContext";
 import { handleLogout } from "../api";
+import { MobileMenu } from "./MobileMenu";
 
 const MainNavigation = ({ children }: { children: React.ReactNode }) => {
   const { user, setUser } = useAuth();
   const router = useRouter();
+  console.log(user);
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b">
+      <nav className="border-b">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-4">
               <Link href="/">
                 <Image
                   src="/icon.png"
@@ -36,72 +36,70 @@ const MainNavigation = ({ children }: { children: React.ReactNode }) => {
                 />
               </Link>
 
-              <div>
-                <div className="flex space-x-4">
-                  <NavigationMenu>
-                    <NavigationMenuList>
-                      <NavigationMenuItem>
-                        <NavigationMenuTrigger className="h-9 px-3">
-                          País
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="w-[80px] p-2">
-                            <Link
-                              href="#"
-                              className="block select-none rounded-md px-2 py-1.5 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              México
-                            </Link>
-                          </div>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    </NavigationMenuList>
-                  </NavigationMenu>
+              <div className="hidden md:flex space-x-4">
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger className="h-9 px-3">
+                        País
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[80px] p-2">
+                          <Link
+                            href="#"
+                            className="block select-none rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                          >
+                            México
+                          </Link>
+                        </div>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
 
-                  <NavigationMenu>
-                    <NavigationMenuList>
-                      <NavigationMenuItem>
-                        <NavigationMenuTrigger className="h-9 px-3">
-                          Ayuda
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="w-[140px] p-2">
-                            <Link
-                              href="#"
-                              className="block select-none rounded-md px-2 py-1.5 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              Centro de ayuda
-                            </Link>
-                          </div>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    </NavigationMenuList>
-                  </NavigationMenu>
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger className="h-9 px-3">
+                        Ayuda
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[140px] p-2">
+                          <Link
+                            href="#"
+                            className="block select-none rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                          >
+                            Centro de ayuda
+                          </Link>
+                        </div>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
 
-                  <NavigationMenu>
-                    <NavigationMenuList>
-                      <NavigationMenuItem>
-                        <NavigationMenuTrigger className="h-9 px-3">
-                          About Us
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="w-[100px] p-2">
-                            <Link
-                              href="#"
-                              className="block select-none rounded-md px-2 py-1.5 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              Nosotros
-                            </Link>
-                          </div>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    </NavigationMenuList>
-                  </NavigationMenu>
-                </div>
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger className="h-9 px-3">
+                        About Us
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[100px] p-2">
+                          <Link
+                            href="#"
+                            className="block select-none rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                          >
+                            Nosotros
+                          </Link>
+                        </div>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               {user ? (
                 <>
                   <span>Hola, {user.username}</span>
@@ -109,7 +107,7 @@ const MainNavigation = ({ children }: { children: React.ReactNode }) => {
                     variant="default"
                     onClick={() => handleLogout(setUser)}
                   >
-                    Log Out
+                    Cerrar sesión
                   </Button>
                 </>
               ) : (
@@ -118,22 +116,25 @@ const MainNavigation = ({ children }: { children: React.ReactNode }) => {
                     variant="ghost"
                     onClick={() => router.push("/auth/login")}
                   >
-                    Log In
+                    Iniciar sesión
                   </Button>
                   <Button
                     variant="default"
                     onClick={() => router.push("/auth/register")}
                   >
-                    Sign Up
+                    Registrarse
                   </Button>
                 </>
               )}
             </div>
+
+            {/* Menú móvil (visible solo en móvil) */}
+            <MobileMenu />
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Contenido Principal */}
+      {/* Contenido principal */}
       <main className="flex-1">{children}</main>
     </div>
   );

@@ -20,13 +20,16 @@ export default function PaginatedComponent({
   onPageChange,
 }: Props) {
   return (
-    <Pagination>
+    <Pagination className="mb-4">
       <PaginationContent>
         {/* Botón Anterior */}
         <PaginationItem>
           <PaginationPrevious
-            href="#"
-            onClick={() => onPageChange(currentPage - 1)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (currentPage > 1) onPageChange(currentPage - 1);
+            }}
             className={
               currentPage === 1 ? "pointer-events-none opacity-50" : ""
             }
@@ -39,8 +42,11 @@ export default function PaginatedComponent({
           return (
             <PaginationItem key={page}>
               <PaginationLink
-                href="#"
-                onClick={() => onPageChange(page)}
+                onClick={(e) => {
+                  e.preventDefault(); // <--- clave
+                  e.stopPropagation();
+                  onPageChange(page);
+                }}
                 className={currentPage === page ? "bg-black text-white" : ""}
               >
                 {page}
@@ -52,8 +58,11 @@ export default function PaginatedComponent({
         {/* Botón Siguiente */}
         <PaginationItem>
           <PaginationNext
-            href="#"
-            onClick={() => onPageChange(currentPage + 1)}
+            onClick={(e) => {
+              e.preventDefault(); // <--- clave
+              e.stopPropagation();
+              if (currentPage < totalPages) onPageChange(currentPage + 1);
+            }}
             className={
               currentPage === totalPages ? "pointer-events-none opacity-50" : ""
             }

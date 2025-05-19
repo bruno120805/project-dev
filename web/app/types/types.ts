@@ -5,6 +5,7 @@ export const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
+
 export type Login = z.infer<typeof LoginSchema>;
 
 // SignUp
@@ -104,3 +105,7 @@ export const RandomSchoolSchema = SchoolSchema.pick({
   name: true,
 });
 export type RandomSchool = z.infer<typeof RandomSchoolSchema>;
+
+export type ApiResponse<T> = {
+  data: T;
+};

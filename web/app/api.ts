@@ -1,13 +1,21 @@
-import { Note, ReviewForm, School, User } from "./types/types";
+import {
+  ApiResponse,
+  Login,
+  Note,
+  ReviewForm,
+  School,
+  User,
+} from "./types/types";
+import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const getSchools = async (q: string) => {
   try {
-    const res = await fetch(`${API_URL}/search/schools?q=${q}`);
-    const { data } = await res.json();
-
-    return data ?? [];
+    const { data } = await axios.get(`${API_URL}/search/schools`, {
+      params: { q },
+    });
+    return data.data ?? [];
   } catch (error) {
     console.error(error);
     return [];
@@ -16,10 +24,10 @@ export const getSchools = async (q: string) => {
 
 export const getProfessors = async (q: string) => {
   try {
-    const res = await fetch(`${API_URL}/search/professor?q=${q}`);
-    const { data } = await res.json();
-
-    return data;
+    const { data } = await axios.get(`${API_URL}/search/professor`, {
+      params: { q },
+    });
+    return data.data;
   } catch (error) {
     console.error(error);
     return [];
@@ -28,55 +36,38 @@ export const getProfessors = async (q: string) => {
 
 const createNote = async (note: Note, professorId: number) => {
   try {
-    const res = await fetch(`${API_URL}/notes/${professorId}`, {
-      method: "POST",
+    const { data } = await axios.post(`${API_URL}/notes/${professorId}`, note, {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify(note),
     });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || "Error al crear la nota");
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || "Error al crear la nota");
   }
 };
 
 export const createReview = async (review: ReviewForm, id: number) => {
   try {
-    const res = await fetch(`${API_URL}/reviews/${id}`, {
-      method: "POST",
+    const { data } = await axios.post(`${API_URL}/reviews/${id}`, review, {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-
-      body: JSON.stringify(review),
     });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || "Error al crear la evaluación");
-  } catch (error) {
-    throw new Error("Error al crear la evaluación");
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error || "Error al crear la evaluación",
+    );
   }
 };
 
 export const getNotesByID = async (id: number) => {
   try {
-    const res = await fetch(`${API_URL}/notes/${id}/view`, {
-      method: "GET",
+    const { data } = await axios.get(`${API_URL}/notes/${id}/view`, {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-
-    const { data } = await res.json();
-    return data;
+    return data.data;
   } catch (error) {
     throw new Error("Error al obtener la nota");
   }
@@ -84,32 +75,26 @@ export const getNotesByID = async (id: number) => {
 
 export const getNotes = async (professorId: number): Promise<Note[]> => {
   try {
-    const res = await fetch(`${API_URL}/notes/${professorId}`, {
-      method: "GET",
+    const { data } = await axios.get(`${API_URL}/notes/${professorId}`, {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-
-    const { data } = await res.json();
-
-    if (!res.ok) throw new Error(data.error || "Error al obtener las notas");
-    return data as Note[];
-  } catch (error) {
+    return data.data as Note[];
+  } catch (error: any) {
     console.error(error);
     return [];
   }
 };
 
-export const getReviews = async (professorId: number) => {};
+export const getReviews = async (professorId: number) => {
+  // Implementación pendiente
+};
 
 export const getProfessorByID = async (id: number) => {
   try {
-    const res = await fetch(`${API_URL}/professor/${id}`);
-    const { data } = await res.json();
-
-    return data;
+    const { data } = await axios.get(`${API_URL}/professor/${id}`);
+    return data.data;
   } catch (error) {
     console.error(error);
   }
@@ -121,12 +106,10 @@ export const getSchoolByID = async (
   offset?: number,
 ) => {
   try {
-    const res = await fetch(
-      `${API_URL}/school/${id}?limit=${limit}&offset=${offset}`,
-    );
-    const { data } = await res.json();
-
-    return data;
+    const { data } = await axios.get(`${API_URL}/school/${id}`, {
+      params: { limit, offset },
+    });
+    return data.data;
   } catch (error) {
     console.error(error);
   }
@@ -134,8 +117,10 @@ export const getSchoolByID = async (
 
 export const getRandomSchools = async () => {
   try {
-    const res = await fetch(`${API_URL}/school/random`);
-    const { data } = await res.json();
+    const {
+      data: { data },
+    } = await axios.get(`${API_URL}/school/random`);
+    console.log(data);
     return data;
   } catch (error) {
     console.error(error);
@@ -144,43 +129,30 @@ export const getRandomSchools = async () => {
 
 export const handleGoogleLogin = async () => {
   try {
-    // Redirige al usuario a la URL de autenticación de Google
-    window.location.href = `${API_URL}/auth/google`; // Esta es la URL donde tu backend maneja la autenticación
-
-    // No hay necesidad de hacer un fetch, ya que el navegador hará una redirección
-    // El flujo se completará con la redirección de Google de vuelta a tu app
+    window.location.href = `${API_URL}/auth/google`;
   } catch (error) {
     console.error("Error en el inicio de sesión con Google:", error);
   }
 };
 
-export const handleLogin = async ({
-  email,
-  password,
-}: {
-  email: string;
-  password: string;
-}) => {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-    credentials: "include",
-  });
+export const handleLogin = async ({ email, password }: Login) => {
+  const {
+    data: { data },
+  } = await axios.post<ApiResponse<{ token: string; user: Login }>>(
+    `${API_URL}/auth/login`,
+    {
+      email,
+      password,
+    },
+  );
 
-  const { data } = await res.json();
   localStorage.setItem("token", data.token);
-  if (!res.ok) throw new Error(data || "Error al iniciar sesión");
   return data.user;
 };
 
 export const handleLogout = async (setUser: (user: User | null) => void) => {
   try {
-    await fetch(`${API_URL}/auth/logout/google`, {
-      method: "GET",
-      credentials: "include",
-    });
-
+    await axios.get(`${API_URL}/auth/logout/google`, { withCredentials: true });
     localStorage.removeItem("token");
     setUser(null);
   } catch (error) {
