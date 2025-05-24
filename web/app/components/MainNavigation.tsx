@@ -100,7 +100,7 @@ const MainNavigation = ({ children }: { children: React.ReactNode }) => {
             </div>
 
             <div className="hidden md:flex items-center gap-4">
-              {user ? (
+              {user && user.username ? (
                 <>
                   <span>Hola, {user.username}</span>
                   <Button
