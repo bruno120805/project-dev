@@ -50,7 +50,6 @@ type tokenConfig struct {
 }
 
 type mailConfig struct {
-	sendGrid  sendGridConfig
 	exp       time.Duration
 	fromEmail string
 	mailTrap  mailTrapConfig
@@ -121,7 +120,6 @@ func (app *application) mount() http.Handler {
 
 		// NOTES ROUTES
 		r.Route("/notes", func(r chi.Router) {
-			// TODO: add auth middleware to notes routes
 			r.Use(app.AuthTokenMiddleware)
 			r.Get("/{professorID}", app.getNotesHandler)
 			r.Post("/{professorID}", app.createNoteHandler)

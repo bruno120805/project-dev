@@ -46,18 +46,14 @@ export default function Page() {
       <Card className="w-full max-w-sm border shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-semibold">
-            Create an account
+            Crea tu cuenta
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enter your email below to create your account
+            Ingresa tus datos para crear una cuenta
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="border">
-              <Github className="mr-2 h-4 w-4" />
-              GitHub
-            </Button>
+          <div className="grid grid-cols-1 gap-4">
             <Button
               variant="outline"
               className="border"
@@ -91,7 +87,7 @@ export default function Page() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-2 text-muted-foreground">
-                OR CONTINUE WITH
+                O CONTINÚA CON
               </span>
             </div>
           </div>
@@ -115,7 +111,7 @@ export default function Page() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="username">
-                Username
+                Nombre de usuario
               </label>
               <Input
                 id="username"
@@ -129,7 +125,7 @@ export default function Page() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="password">
-                Password
+                Contraseña
               </label>
               <Input
                 id="password"

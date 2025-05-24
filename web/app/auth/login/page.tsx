@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@radix-ui/react-separator";
-import { Github } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -29,7 +29,7 @@ const LoginPage = () => {
       router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        setError("Error al iniciar sesión, verifica tus credenciales");
       } else {
         setError("An unknown error occurred");
       }
@@ -42,18 +42,11 @@ const LoginPage = () => {
       <Card className="w-full max-w-sm border shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-semibold">
-            Login with your Account
+            Inicia sesión con tu cuenta
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Enter your email below to login
-          </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="border">
-              <Github className="mr-2 h-4 w-4" />
-              GitHub
-            </Button>
+          <div className="grid grid-cols-1 gap-4">
             <Button
               variant="outline"
               className="border"
@@ -87,7 +80,7 @@ const LoginPage = () => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-2 text-muted-foreground">
-                OR CONTINUE WITH
+                O CONTINÚA CON
               </span>
             </div>
           </div>
@@ -108,6 +101,9 @@ const LoginPage = () => {
                 required
               />
 
+              <label className="text-sm font-medium" htmlFor="email">
+                Contraseña
+              </label>
               <Input
                 id="password"
                 type="password"
@@ -119,9 +115,19 @@ const LoginPage = () => {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "..." : "Login"}
+              {loading ? "..." : "Iniciar sesión"}
             </Button>
           </form>
+
+          {/* TODO: Add a link to the password recovery page */}
+          <div className="flex justify-between text-sm">
+            <Link href="#" className="text-muted-foreground">
+              Olvidaste tu contraseña?
+            </Link>
+            <Link href="/auth/register" className="text-muted-foreground">
+              Registrarse
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -98,21 +98,6 @@ export default function LandingPage() {
                 <p className="text-lg text-muted-foreground">{labelText}</p>
               </div>
 
-              <div className="flex gap-4 justify-center">
-                <Button
-                  className={`w - 1 / 4 ${selectedButton === "school" ? "bg-black text-white" : "bg-gray-200 text-black"} `}
-                  onClick={() => handleButtonClick("school")}
-                >
-                  <span className="hidden md:inline">School</span>
-                </Button>
-                <Button
-                  className={`w - 1 / 4 ${selectedButton === "professor" ? "bg-black text-white" : "bg-gray-200 text-black"} `}
-                  onClick={() => handleButtonClick("professor")}
-                >
-                  <span className="hidden md:inline">Professor</span>
-                </Button>
-              </div>
-
               {/* Search Input */}
               <div className="space-y-4">
                 <Input
@@ -123,6 +108,24 @@ export default function LandingPage() {
                   onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                   className="max-w-md"
                 />
+
+                <div className="flex gap-4 justify-center">
+                  {selectedButton === "school" ? (
+                    <span
+                      className="text-sm font-semibold cursor-pointer"
+                      onClick={() => handleButtonClick("professor")}
+                    >
+                      Me gustaría buscar a un profesor
+                    </span>
+                  ) : (
+                    <span
+                      className="text-sm font-semibold cursor-pointer"
+                      onClick={() => handleButtonClick("school")}
+                    >
+                      Me gustaría buscar una escuela
+                    </span>
+                  )}
+                </div>
 
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Escuelas</p>
@@ -151,7 +154,7 @@ export default function LandingPage() {
                   src="/iconp.png"
                   alt="Hero Illustration"
                   fill
-                  className="object-contain"
+                  className="object-contain hidden md:block"
                   priority
                 />
               </div>

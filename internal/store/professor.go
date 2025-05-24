@@ -75,10 +75,18 @@ func (s *ProfessorStore) Create(ctx context.Context, professor *Professor) error
 
 func (s *ProfessorStore) GetProfessorsByName(ctx context.Context, name string) ([]*Professor, error) {
 	query := `
-	SELECT id, name, subject, school_id
-	FROM professor
-	WHERE name ILIKE '%' || $1 || '%'
+	SELECT 
+		p.id, 
+		p.name, 
+		p.subject, 
+		p.school_id,
+		COUNT(r.id) AS total_reviews
+		FROM professor p
+		LEFT JOIN reviews r ON r.professor_id = p.id
+		WHERE p.name ILIKE '%' || $1 || '%'
+		GROUP BY p.id, p.name, p.subject, p.school_id
 	`
+
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
@@ -96,6 +104,7 @@ func (s *ProfessorStore) GetProfessorsByName(ctx context.Context, name string) (
 			&professor.Name,
 			&professor.Subject,
 			&professor.SchoolID,
+			&professor.TotalReviews,
 		)
 		if err != nil {
 			return nil, err
