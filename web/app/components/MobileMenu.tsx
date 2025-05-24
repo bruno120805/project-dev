@@ -23,7 +23,7 @@ export function MobileMenu() {
         </SheetTrigger>
         <SheetContent side="right">
           <div className="flex flex-col gap-4 mt-8 items-center">
-            {user ? (
+            {user && user.username ? (
               <>
                 <span className="text-md text-shadow-muted-foreground">
                   Hola, {user.username}
