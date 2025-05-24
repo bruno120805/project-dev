@@ -10,12 +10,30 @@ import (
 
 const maxFileSize = 3 * 1024 * 1024 // 10 MB
 
+type Tag string
+
+const (
+	CalificaDuro            Tag = "Califica Duro"
+	MuchasTareas            Tag = "Muchas Tareas"
+	ClasesExcelentes        Tag = "Clases Excelentes"
+	RespetadoPorEstudiantes Tag = "Respetado por los Estudiantes"
+	TomariaSuClaseOtraVez   Tag = "Tomaría su clase otra vez"
+	AsistenciaObligatoria   Tag = "Asistencia Obligatoria"
+	DejaTrabajosLargos      Tag = "Deja trabajos largos"
+	Barco                   Tag = "Barco"
+	ClasesLargas            Tag = "Las clases son largas"
+	ExamenesDificiles       Tag = "Los exámenes son difíciles"
+	ExamenesFaciles         Tag = "Los exámenes son fáciles"
+	NoEnseñaNada            Tag = "No enseña nada"
+)
+
 type CreateReviewPayload struct {
 	Text           string `json:"text" validate:"required"`
 	Subject        string `json:"subject" validate:"required"`
 	Difficulty     int    `json:"difficulty" validate:"required" validate:"gte=1" validate:"lte=10"`
 	Rating         int    `json:"rating" validate:"required" validate:"gte=1" validate:"lte=5"`
 	WouldTakeAgain bool   `json:"would_take_again"`
+	Tags           []Tag  `json:"tags" validate:"dive,oneof='Califica Duro' 'Muchas Tareas' 'Clases Excelentes' 'Respetado por los Estudiantes' 'Tomaría su clase otra vez' 'Asistencia Obligatoria' 'Deja trabajos largos' 'Barco' 'Las clases son largas' 'Los exámenes son difíciles' 'Los exámenes son fáciles' 'No enseña nada'"`
 }
 
 func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +58,11 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 
 	user := app.getUserFromCtx(r)
 
+	tags := make([]string, len(payload.Tags))
+	for i, tag := range payload.Tags {
+		tags[i] = string(tag)
+	}
+
 	review := &store.Review{
 		Text:           payload.Text,
 		Subject:        payload.Subject,
@@ -47,6 +70,7 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 		Rating:         payload.Rating,
 		WouldTakeAgain: payload.WouldTakeAgain,
 		ProfessorID:    professorID,
+		Tags:           tags,
 	}
 
 	if err := app.store.Reviews.CreateReview(ctx, user.ID, review); err != nil {

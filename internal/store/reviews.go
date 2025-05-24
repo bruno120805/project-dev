@@ -4,18 +4,21 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/lib/pq"
 )
 
 type Review struct {
-	ID             int64  `json:"id"`
-	Text           string `json:"text"`
-	Subject        string `json:"subject"`
-	Difficulty     int    `json:"difficulty"`
-	CreatedAt      string `json:"created_at"`
-	UserID         int64  `json:"user_id"`
-	Rating         int    `json:"rating"`
-	ProfessorID    int64  `json:"professor_id"`
-	WouldTakeAgain bool   `json:"would_take_again"`
+	ID             int64    `json:"id"`
+	Text           string   `json:"text"`
+	Subject        string   `json:"subject"`
+	Difficulty     int      `json:"difficulty"`
+	CreatedAt      string   `json:"created_at"`
+	UserID         int64    `json:"user_id"`
+	Rating         int      `json:"rating"`
+	ProfessorID    int64    `json:"professor_id"`
+	WouldTakeAgain bool     `json:"would_take_again"`
+	Tags           []string `json:"tags"`
 }
 
 type ReviewStore struct {
@@ -43,8 +46,8 @@ func (s *ReviewStore) CreateReview(ctx context.Context, userID int64, r *Review)
 
 		// INSERT REVIEW
 		query2 := `
-			INSERT INTO reviews (text, subject, difficulty, user_id, professor_id, rating, would_take_again)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			INSERT INTO reviews (text, subject, difficulty, user_id, professor_id, rating, would_take_again, tags)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 			RETURNING id, created_at
 		`
 
@@ -61,6 +64,7 @@ func (s *ReviewStore) CreateReview(ctx context.Context, userID int64, r *Review)
 			r.ProfessorID,
 			r.Rating,
 			r.WouldTakeAgain,
+			pq.Array(r.Tags),
 		).Scan(
 			&r.ID,
 			&r.CreatedAt,
