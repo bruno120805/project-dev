@@ -324,12 +324,10 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) beginAuthProviderCallback(w http.ResponseWriter, r *http.Request) {
-	if gothUser, err := gothic.CompleteUserAuth(w, r); err == nil {
-		// TODO: Handle the authenticated user
-		fmt.Println(gothUser)
-	} else {
+	if _, err := gothic.CompleteUserAuth(w, r); err != nil {
 		gothic.BeginAuthHandler(w, r)
 	}
+
 }
 
 func (app *application) getAuthCallback(w http.ResponseWriter, r *http.Request) {

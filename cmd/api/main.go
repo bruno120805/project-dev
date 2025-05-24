@@ -60,8 +60,9 @@ func main() {
 		auth: authConfig{
 			token: tokenConfig{
 				secret: env.GetString("JWT_SECRET", "example"),
-				exp:    time.Hour * 24,
-				iss:    "project",
+				// TODO: change time for whatever i want
+				exp: time.Hour * 24 * 7,
+				iss: "project",
 			},
 		},
 		uploader: uploaderConfig{

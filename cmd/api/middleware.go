@@ -18,7 +18,6 @@ const userKey contextKey = "user"
 
 func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implementar la sesión de Google
 		authHeader := r.Header.Get("Authorization")
 		if authHeader != "" {
 			// Si el header está presente, valida el JWT
