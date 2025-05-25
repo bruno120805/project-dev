@@ -46,13 +46,20 @@ const createNote = async (note: Note, professorId: number) => {
   }
 };
 
-export const createReview = async (review: ReviewForm, id: number) => {
+export const createReview = async (review: ReviewForm, professorId: number) => {
   try {
-    const { data } = await axios.post(`${API_URL}/reviews/${id}`, review, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+    const { data } = await axios.post(
+      `${API_URL}/reviews/${professorId}`,
+      review,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       },
-    });
+    );
+
+    console.log(data);
+    return data;
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error || "Error al crear la evaluación",
@@ -120,7 +127,6 @@ export const getRandomSchools = async () => {
     const {
       data: { data },
     } = await axios.get(`${API_URL}/school/random`);
-    console.log(data);
     return data;
   } catch (error) {
     console.error(error);

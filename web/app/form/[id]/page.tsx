@@ -21,6 +21,7 @@ import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import TeacherFeedback from "@/app/components/TeacherFeedback";
 
 export default function Page() {
   const router = useRouter();
@@ -30,7 +31,8 @@ export default function Page() {
     subject: "",
     difficulty: 7,
     rating: 4,
-    would_take_again: false,
+    would_take_again: true,
+    tags: [] as string[],
   });
 
   const professorId = parseInt(id as string, 10);
@@ -55,6 +57,14 @@ export default function Page() {
     setFormData((prev) => ({
       ...prev,
       would_take_again: checked,
+    }));
+  };
+
+  const handleTagsChange = ({ selectedTags }: { selectedTags: string[] }) => {
+    console.log(selectedTags);
+    setFormData((prev) => ({
+      ...prev,
+      tags: selectedTags,
     }));
   };
 
@@ -115,6 +125,11 @@ export default function Page() {
               />
             </div>
 
+            <TeacherFeedback
+              selectedTags={formData.tags}
+              onFeedbackChange={handleTagsChange}
+            />
+
             <div className="space-y-3">
               <Label htmlFor="text" className="text-lg">
                 Comentario
@@ -174,7 +189,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between bg-muted p-6 rounded-lg">
+            <div className="flex items-center justify-between  p-6 rounded-lg">
               <Label
                 htmlFor="would-take-again"
                 className="cursor-pointer text-lg"
@@ -185,7 +200,7 @@ export default function Page() {
                 id="would-take-again"
                 checked={formData.would_take_again}
                 onCheckedChange={handleWouldTakeAgainChange}
-                className="scale-125"
+                className="scale-125 cursor-pointer"
               />
             </div>
           </CardContent>

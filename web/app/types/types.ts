@@ -77,6 +77,7 @@ export const ReviewSchema = z.object({
   professorName: z.string(),
   rating: z.number().min(1).max(5),
   would_take_again: z.boolean(),
+  tags: z.array(z.string()),
 });
 export type Review = z.infer<typeof ReviewSchema>;
 
