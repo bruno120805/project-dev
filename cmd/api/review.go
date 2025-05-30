@@ -13,27 +13,36 @@ const maxFileSize = 3 * 1024 * 1024 // 10 MB
 type Tag string
 
 const (
-	CalificaDuro            Tag = "Califica Duro"
-	MuchasTareas            Tag = "Muchas Tareas"
-	ClasesExcelentes        Tag = "Clases Excelentes"
-	RespetadoPorEstudiantes Tag = "Respetado por los Estudiantes"
-	TomariaSuClaseOtraVez   Tag = "Tomaría su clase otra vez"
-	AsistenciaObligatoria   Tag = "Asistencia Obligatoria"
-	DejaTrabajosLargos      Tag = "Deja trabajos largos"
-	Barco                   Tag = "Barco"
-	ClasesLargas            Tag = "Las clases son largas"
-	ExamenesDificiles       Tag = "Los exámenes son difíciles"
-	ExamenesFaciles         Tag = "Los exámenes son fáciles"
-	NoEnseñaNada            Tag = "No enseña nada"
+	Excelente                Tag = "excelente"
+	DaBuenaRetroalimentacion Tag = "buena-retroalimentacion"
+	BrindaApoyo              Tag = "brinda-apoyo"
+	ClasesExcelentes         Tag = "clases-excelentes"
+	DaCreditoExtra           Tag = "credito-extra"
+
+	AsistenciaObligatoria   Tag = "asistencia-obligatoria"
+	RespetadoPorEstudiantes Tag = "respetado-estudiantes"
+	HaceExamenesSorpresa    Tag = "examenes-sorpresa"
+	ParticipacionImportante Tag = "participacion-importante"
+	ClasesLargas            Tag = "clases-largas"
+
+	CalificaDuro          Tag = "califica-duro"
+	NoEnseñaNada          Tag = "no-ensena-nada"
+	MuchasTareas          Tag = "muchas-tareas"
+	ExamenesDificiles     Tag = "examenes-dificiles"
+	PocosExamenes         Tag = "pocos-examenes"
+	MuchosExamenes        Tag = "muchos-examenes"
+	DejaTrabajosLargos    Tag = "deja-trabajos-largos"
+	MuchosProyectos       Tag = "muchos-proyectos"
+	TomariaSuClaseOtraVez Tag = "tomaria-otra-vez"
 )
 
 type CreateReviewPayload struct {
 	Text           string `json:"text" validate:"required"`
 	Subject        string `json:"subject" validate:"required"`
-	Difficulty     int    `json:"difficulty" validate:"required" validate:"gte=1" validate:"lte=10"`
-	Rating         int    `json:"rating" validate:"required" validate:"gte=1" validate:"lte=5"`
+	Difficulty     int    `json:"difficulty" validate:"required" validate="gte=1,lte=10"`
+	Rating         int    `json:"rating" validate:"required" validate:"gte=1,lte=5"`
 	WouldTakeAgain bool   `json:"would_take_again"`
-	Tags           []Tag  `json:"tags" validate:"dive,oneof='Califica Duro' 'Muchas Tareas' 'Clases Excelentes' 'Respetado por los Estudiantes' 'Tomaría su clase otra vez' 'Asistencia Obligatoria' 'Deja trabajos largos' 'Barco' 'Las clases son largas' 'Los exámenes son difíciles' 'Los exámenes son fáciles' 'No enseña nada'"`
+	Tags           []Tag  `json:"tags" validate:"dive,oneof='excelente' 'buena-retroalimentacion' 'brinda-apoyo' 'clases-excelentes' 'credito-extra' 'asistencia-obligatoria' 'respetado-estudiantes' 'examenes-sorpresa' 'participacion-importante' 'clases-largas' 'califica-duro' 'no-enseña-nada' 'muchas-tareas' 'examenes-dificiles' 'pocos-examenes' 'muchos-examenes' 'deja-trabajos-largos' 'muchos-proyectos' 'tomaria-otra-vez'"`
 }
 
 func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Request) {
