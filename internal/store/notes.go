@@ -10,7 +10,7 @@ import (
 
 type Note struct {
 	ID          int64    `json:"id"`
-	Content     string   `json:"Content"`
+	Content     string   `json:"content"`
 	Subject     string   `json:"subject"`
 	Title       string   `json:"title"`
 	FilesURL    []string `json:"files_url"`
