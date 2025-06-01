@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/lib/pq"
 )
@@ -65,7 +64,6 @@ func (s *NoteStore) GetNotes(ctx context.Context, professorID int64) ([]*Note, e
 }
 
 func (s *NoteStore) Create(ctx context.Context, userID int64, n *Note) error {
-	fmt.Println("note failed here")
 
 	query := `
 		INSERT INTO notes (content, subject, title, files_url, user_id, professor_id) 
