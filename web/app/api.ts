@@ -2,6 +2,7 @@ import {
   ApiResponse,
   Login,
   Note,
+  NotesForm,
   ReviewForm,
   School,
   User,
@@ -34,13 +35,31 @@ export const getProfessors = async (q: string) => {
   }
 };
 
-const createNote = async (note: Note, professorId: number) => {
+export const createNote = async (note: NotesForm, professorId: number) => {
   try {
-    const { data } = await axios.post(`${API_URL}/notes/${professorId}`, note, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+    const formData = new FormData();
+
+    formData.append("subject", note.subject);
+    formData.append("title", note.title);
+    formData.append("content", note.content);
+
+    note.files.forEach((file) => {
+      formData.append("files", file, file.name);
     });
+
+    const token = localStorage.getItem("token");
+
+    const { data } = await axios.post(
+      `${API_URL}/notes/${professorId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || "Error al crear la nota");
   }
@@ -58,7 +77,6 @@ export const createReview = async (review: ReviewForm, professorId: number) => {
       },
     );
 
-    console.log(data);
     return data;
   } catch (error: any) {
     throw new Error(
