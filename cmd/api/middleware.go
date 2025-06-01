@@ -92,7 +92,6 @@ func (app *application) getSessionUser(r *http.Request) (goth.User, error) {
 		return goth.User{}, err
 	}
 
-	fmt.Printf("Session: %+v", session)
 	u := session.Values["user"]
 	if u == nil {
 		return goth.User{}, fmt.Errorf("user is not authenticated")

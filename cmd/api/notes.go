@@ -37,7 +37,6 @@ type CreateNotePayload struct {
 //	@Security		ApiKeyAuth
 //	@Router			/notes/{professorID} [post]
 func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("createNoteHandler")
 	var payload CreateNotePayload
 	professorID, err := strconv.ParseInt(chi.URLParam(r, "professorID"), 10, 64)
 	if err != nil {

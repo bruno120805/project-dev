@@ -305,7 +305,6 @@ func (app *application) getAuthCallBackFunction(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	fmt.Println("token:", token)
 	redirectURL := fmt.Sprintf("%s?token=%s", app.config.frontendURL, token)
 	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 }
