@@ -53,6 +53,7 @@ type mailConfig struct {
 	exp       time.Duration
 	fromEmail string
 	mailTrap  mailTrapConfig
+	sendGrid  sendGridConfig
 }
 
 type sendGridConfig struct {
