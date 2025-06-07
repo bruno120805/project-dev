@@ -73,13 +73,12 @@ export default function NotesPage() {
           {`Apuntes de ${notes?.subject}`}
         </h1>
         <div>
-          <span>{`${notes?.Content}`}</span>
+          <span>{`${notes?.content}`}</span>
         </div>
 
         <Tabs defaultValue="ver-apunte" className="mb-8">
-          <TabsList className="grid grid-cols-3 gap-3 w-full max-w-md">
+          <TabsList className="grid grid-cols-2 gap-3 w-full max-w-md">
             <TabsTrigger value="ver-apunte">Ver apunte</TabsTrigger>
-            <TabsTrigger value="resumen">Resumen</TabsTrigger>
             <TabsTrigger value="descargar" className="bg-slate-900 text-white">
               Descargar
             </TabsTrigger>
