@@ -19,6 +19,13 @@ const userKey contextKey = "user"
 func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
+		fmt.Println("auth header", authHeader)
+
+		if authHeader == "" {
+			app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
+			return
+		}
+
 		if authHeader != "" {
 			// Si el header está presente, valida el JWT
 			parts := strings.Split(authHeader, " ")
