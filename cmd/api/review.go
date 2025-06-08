@@ -39,8 +39,8 @@ const (
 type CreateReviewPayload struct {
 	Text           string `json:"text" validate:"required"`
 	Subject        string `json:"subject" validate:"required"`
-	Difficulty     int    `json:"difficulty" validate:"required" validate="gte=1,lte=10"`
-	Rating         int    `json:"rating" validate:"required" validate:"gte=1,lte=5"`
+	Difficulty     int    `json:"difficulty" validate:"required,gte=1,lte=10"`
+	Rating         int    `json:"rating" validate:"required,gte=1,lte=5"`
 	WouldTakeAgain bool   `json:"would_take_again"`
 	Tags           []Tag  `json:"tags" validate:"dive,oneof='excelente' 'buena-retroalimentacion' 'brinda-apoyo' 'clases-excelentes' 'credito-extra' 'asistencia-obligatoria' 'respetado-estudiantes' 'examenes-sorpresa' 'participacion-importante' 'clases-largas' 'califica-duro' 'no-enseña-nada' 'muchas-tareas' 'examenes-dificiles' 'pocos-examenes' 'muchos-examenes' 'deja-trabajos-largos' 'muchos-proyectos' 'tomaria-otra-vez'"`
 }
