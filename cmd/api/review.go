@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const maxFileSize = 3 * 1024 * 1024 // 10 MB
+const maxFileSize = 6 * 1024 * 1024 // 6 MB
 
 type Tag string
 
@@ -88,6 +88,30 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := app.jsonResponse(w, http.StatusCreated, review); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
+func (app *application) getTagsFromProfessorHandler(w http.ResponseWriter, r *http.Request) {
+	professorID, err := strconv.ParseInt(chi.URLParam(r, "professorID"), 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	tags, err := app.store.Reviews.GetTagsFromProfessor(ctx, professorID)
+	if err != nil {
+		app.notFoundResponse(w, r, err)
+		return
+	}
+
+	if len(tags) > 6 {
+		tags = tags[:6]
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, tags); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
