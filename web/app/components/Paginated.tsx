@@ -8,6 +8,36 @@ import {
   PaginationLink,
 } from "@/components/ui/pagination";
 
+function getPagination(
+  current: number,
+  total: number,
+  delta: number = 2,
+): (number | string)[] {
+  const range: (number | string)[] = [];
+  const left = Math.max(2, current - delta);
+  const right = Math.min(total - 1, current + delta);
+
+  range.push(1);
+
+  if (left > 2) {
+    range.push("...");
+  }
+
+  for (let i = left; i <= right; i++) {
+    range.push(i);
+  }
+
+  if (right < total - 1) {
+    range.push("...");
+  }
+
+  if (total > 1) {
+    range.push(total);
+  }
+
+  return range;
+}
+
 type Props = {
   currentPage: number;
   totalPages: number;
@@ -36,30 +66,31 @@ export default function PaginatedComponent({
           />
         </PaginationItem>
 
-        {/* Números de Página */}
-        {[...Array(totalPages)].map((_, index) => {
-          const page = index + 1;
-          return (
-            <PaginationItem key={page}>
+        {/* Páginas con puntos suspensivos */}
+        {getPagination(currentPage, totalPages).map((item, index) => (
+          <PaginationItem key={index}>
+            {typeof item === "number" ? (
               <PaginationLink
                 onClick={(e) => {
-                  e.preventDefault(); // <--- clave
+                  e.preventDefault();
                   e.stopPropagation();
-                  onPageChange(page);
+                  onPageChange(item);
                 }}
-                className={currentPage === page ? "bg-black text-white" : ""}
+                className={currentPage === item ? "bg-black text-white" : ""}
               >
-                {page}
+                {item}
               </PaginationLink>
-            </PaginationItem>
-          );
-        })}
+            ) : (
+              <span className="px-2 text-gray-500 select-none">...</span>
+            )}
+          </PaginationItem>
+        ))}
 
         {/* Botón Siguiente */}
         <PaginationItem>
           <PaginationNext
             onClick={(e) => {
-              e.preventDefault(); // <--- clave
+              e.preventDefault();
               e.stopPropagation();
               if (currentPage < totalPages) onPageChange(currentPage + 1);
             }}
