@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { file } from "jszip";
 
 interface ImageViewerProps {
   fileUrl: string;
@@ -41,6 +42,8 @@ export default function ImageViewer({
   const toggleZoom = () => {
     setIsZoomed(!isZoomed);
   };
+
+  const arrFileUrl = fileUrl.split(" ");
 
   return (
     <Card className="w-full overflow-hidden bg-background/50 backdrop-blur-sm border-muted">
@@ -84,7 +87,7 @@ export default function ImageViewer({
                       : maxHeight,
                   width: "auto",
                 }}
-                onLoadingComplete={() => setIsLoading(false)}
+                onLoad={() => setIsLoading(false)}
                 priority
               />
             </div>
@@ -92,23 +95,26 @@ export default function ImageViewer({
 
           <div className="flex items-center justify-between w-full mt-2 px-2">
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleZoom}
-                className="rounded-full"
-              >
-                {isZoomed ? <ZoomOut size={18} /> : <ZoomIn size={18} />}
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full"
-                onClick={() => window.open(fileUrl, "_blank")}
-              >
-                <Download size={18} />
-              </Button>
+              {arrFileUrl.map((file) => (
+                <div key={file}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleZoom}
+                    className="rounded-full"
+                  >
+                    {isZoomed ? <ZoomOut size={18} /> : <ZoomIn size={18} />}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => window.open(file)}
+                  >
+                    <Download size={18} />
+                  </Button>
+                </div>
+              ))}
             </div>
 
             {hasNavigation && (
