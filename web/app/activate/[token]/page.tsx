@@ -2,37 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { activateAccountUser } from "@/app/api";
+import { Loader2 } from "lucide-react";
 
 const ActivateAccountPage = () => {
   const { token } = useParams();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const activateAccount = async () => {
-      if (!token) return;
+      if (!token) {
+        setError("Token de activación no proporcionado.");
+        return;
+      }
 
+      setIsLoading(true);
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/activate/${token}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-
-        const data = await res.json();
-
-        if (!res.ok)
-          throw new Error(data?.error || "Error al activar la cuenta");
+        await activateAccountUser(token as string);
 
         setMessage("Cuenta activada correctamente. Redirigiendo...");
-
-        setTimeout(() => {
-          window.location.href = "/auth/login";
-        }, 3000);
       } catch (err) {
+        console.log(err);
         setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        window.location.href = "/auth/login";
+        setIsLoading(false);
       }
     };
 
@@ -41,8 +37,7 @@ const ActivateAccountPage = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-      {message && <p className="text-green-600">{message}</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {isLoading && <Loader2 className="h-8 w-8 animate-spin text-primary" />}
     </div>
   );
 };
