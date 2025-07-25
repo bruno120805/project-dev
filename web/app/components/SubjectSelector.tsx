@@ -27,7 +27,7 @@ const SubjectSelector: React.FC<MateriaSelectorProps> = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="flex items-center justify-between w-full sm:w-auto"
+          className="flex items-center justify-between w-1/2 sm:w-auto"
         >
           {selectedMateria || "Todas las materias"}
           <ChevronDown size={16} className="ml-2" />
