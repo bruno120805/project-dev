@@ -18,7 +18,6 @@ import { MobileMenu } from "./MobileMenu";
 const MainNavigation = ({ children }: { children: React.ReactNode }) => {
   const { user, setUser } = useAuth();
   const router = useRouter();
-  console.log(user);
 
   return (
     <div className="min-h-screen flex flex-col">
