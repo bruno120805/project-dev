@@ -120,6 +120,44 @@ func (s *NoteStore) GetNoteByID(ctx context.Context, noteID int64) (*Note, error
 	return n, nil
 }
 
+func (s *NoteStore) GetNotesByName(ctx context.Context, fq PaginatedFeedQuery, professorID int64) ([]*Note, error) {
+	query := `
+		SELECT id, subject, title, content, files_url, professor_id, created_at
+		FROM notes 
+		WHERE professor_id = $1 AND title ILIKE '%' || $2 || '%'
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, professorID, fq.Search)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var notes []*Note
+	for rows.Next() {
+		n := &Note{}
+		err := rows.Scan(
+			&n.ID,
+			&n.Subject,
+			&n.Title,
+			&n.Content,
+			pq.Array(&n.FilesURL),
+			&n.ProfessorID,
+			&n.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		notes = append(notes, n)
+	}
+
+	return notes, nil
+
+}
+
 func (s *NoteStore) Delete(ctx context.Context, noteID int64) error {
 	query := `
 		DELETE FROM notes
