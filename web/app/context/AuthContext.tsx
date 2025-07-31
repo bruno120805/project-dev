@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User, UserAuth } from "../types/types";
 
 // Definir el tipo para el contexto de autenticación
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 type AuthContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -32,16 +34,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (storedToken) {
           // Fetch usando JWT
-          res = await fetch("http://localhost:8080/v1/auth/user", {
+          res = await fetch(`${API_URL}/auth/user`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
-            credentials: "include", // Incluimos por si también hay cookies
+            credentials: "include",
           });
         } else {
-          // Fetch usando sesión
-          res = await fetch("http://localhost:8080/v1/auth/me", {
+          res = await fetch(`${API_URL}/auth/me`, {
             method: "GET",
             credentials: "include",
           });
@@ -63,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     fetchUser();
-  }, [token]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, setUser, token, setToken, isLoading }}>

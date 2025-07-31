@@ -55,11 +55,11 @@ func (app *application) forbiddenResponse(w http.ResponseWriter, r *http.Request
 	writeJSONError(w, http.StatusForbidden, "forbidden")
 }
 
-// func (app *application) rateLimitExceededResponse(w http.ResponseWriter, r *http.Request, retryAfter string) {
+func (app *application) rateLimitExceededResponse(w http.ResponseWriter, r *http.Request, retryAfter string) {
 
-// 	app.logger.Warnf("rate imit error", "method", r.Method, "path", r.URL.Path)
+	app.logger.Warnf("rate limit error", "method", r.Method, "path", r.URL.Path)
 
-// 	w.Header().Set("Retry-After", retryAfter)
+	w.Header().Set("Retry-After", retryAfter)
 
-// 	writeJSONError(w, http.StatusTooManyRequests, "rate limit exceeded, retry after: "+retryAfter)
-// }
+	writeJSONError(w, http.StatusTooManyRequests, "Demasiadas peticiones, intenta después de: "+retryAfter)
+}

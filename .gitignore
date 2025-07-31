@@ -1,5 +1,7 @@
+.gitignore
 .env
 tmp
 .vscode
 bin/
 binfc22/
+TODO.md

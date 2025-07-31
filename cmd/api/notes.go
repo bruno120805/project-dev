@@ -37,7 +37,6 @@ type CreateNotePayload struct {
 //	@Security		ApiKeyAuth
 //	@Router			/notes/{professorID} [post]
 func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("createNoteHandler")
 	var payload CreateNotePayload
 	professorID, err := strconv.ParseInt(chi.URLParam(r, "professorID"), 10, 64)
 	if err != nil {
@@ -79,13 +78,24 @@ func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request
 
 	user := app.getUserFromCtx(r)
 
+	var totalSize int64
+	for _, handler := range files {
+		if handler == nil {
+			app.badRequestResponse(w, r, fmt.Errorf("no hay archivos subidos"))
+			return
+		}
+
+		totalSize += handler.Size
+	}
+
+	if totalSize > maxFileSize {
+		app.badRequestResponse(w, r, errors.New("tus archivos son demasiado grandes, lo permitido es de 6MB"))
+		return
+	}
+
 	var fileURLs []string
 
 	for _, handler := range files {
-		if handler == nil {
-			app.badRequestResponse(w, r, fmt.Errorf("no file handler provided"))
-			return
-		}
 
 		if handler.Filename == "" {
 			app.badRequestResponse(w, r, fmt.Errorf("no file name provided"))
@@ -93,12 +103,12 @@ func (app *application) createNoteHandler(w http.ResponseWriter, r *http.Request
 		}
 
 		if !isValidExtension(handler.Filename) {
-			app.badRequestResponse(w, r, fmt.Errorf("invalid file extension"))
+			app.badRequestResponse(w, r, fmt.Errorf("extensión de archivo no permitida, solo se permiten jpg, jpeg, png y pdf"))
 			return
 		}
 
 		if handler.Size > maxFileSize {
-			app.badRequestResponse(w, r, fmt.Errorf("file too large"))
+			app.badRequestResponse(w, r, fmt.Errorf("tu archivo es demasiado grande, lo permitido es de 6MB"))
 			return
 		}
 
@@ -156,6 +166,46 @@ func isValidExtension(fileName string) bool {
 	}
 
 	return allowedExtensions[ext]
+}
+
+func (app *application) getNoteByNameHandler(w http.ResponseWriter, r *http.Request) {
+	professorID, err := strconv.ParseInt(chi.URLParam(r, "professorID"), 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	noteName := r.URL.Query().Get("q")
+	if noteName == "" {
+		app.badRequestResponse(w, r, errors.New("missing school name"))
+		return
+	}
+
+	fq := store.PaginatedFeedQuery{
+		Limit:  10,
+		Offset: 0,
+		Sort:   "desc",
+		Search: noteName,
+	}
+
+	fq, err = fq.Parse(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	notes, err := app.store.Notes.GetNotesByName(ctx, fq, professorID)
+	if err != nil {
+		app.notFoundResponse(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, notes); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
 }
 
 func (app *application) getNotesHandler(w http.ResponseWriter, r *http.Request) {

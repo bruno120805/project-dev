@@ -22,9 +22,9 @@ type User struct {
 	Email     string   `json:"email"`
 	Password  password `json:"-"`
 	CreatedAt string   `json:"created_at"`
-	IsActive  bool     `json:"is_active"`
-	Role      Role     `json:"role"`
-	RoleID    int64    `json:"role_id"`
+	IsActive  bool     `json:"-"`
+	Role      Role     `json:"-"`
+	RoleID    int64    `json:"-"`
 }
 
 type password struct {

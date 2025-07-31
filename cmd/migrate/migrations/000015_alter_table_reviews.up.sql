@@ -1,0 +1,2 @@
+ALTER TABLE reviews ADD COLUMN tags TEXT[] NOT NULL DEFAULT '{}';
+

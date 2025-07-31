@@ -3,14 +3,13 @@ package store
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/lib/pq"
 )
 
 type Note struct {
 	ID          int64    `json:"id"`
-	Content     string   `json:"Content"`
+	Content     string   `json:"content"`
 	Subject     string   `json:"subject"`
 	Title       string   `json:"title"`
 	FilesURL    []string `json:"files_url"`
@@ -65,7 +64,6 @@ func (s *NoteStore) GetNotes(ctx context.Context, professorID int64) ([]*Note, e
 }
 
 func (s *NoteStore) Create(ctx context.Context, userID int64, n *Note) error {
-	fmt.Println("note failed here")
 
 	query := `
 		INSERT INTO notes (content, subject, title, files_url, user_id, professor_id) 
@@ -120,6 +118,44 @@ func (s *NoteStore) GetNoteByID(ctx context.Context, noteID int64) (*Note, error
 	}
 
 	return n, nil
+}
+
+func (s *NoteStore) GetNotesByName(ctx context.Context, fq PaginatedFeedQuery, professorID int64) ([]*Note, error) {
+	query := `
+		SELECT id, subject, title, content, files_url, professor_id, created_at
+		FROM notes 
+		WHERE professor_id = $1 AND title ILIKE '%' || $2 || '%'
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, professorID, fq.Search)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var notes []*Note
+	for rows.Next() {
+		n := &Note{}
+		err := rows.Scan(
+			&n.ID,
+			&n.Subject,
+			&n.Title,
+			&n.Content,
+			pq.Array(&n.FilesURL),
+			&n.ProfessorID,
+			&n.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		notes = append(notes, n)
+	}
+
+	return notes, nil
+
 }
 
 func (s *NoteStore) Delete(ctx context.Context, noteID int64) error {

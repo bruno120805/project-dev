@@ -61,7 +61,7 @@ func main() {
 			token: tokenConfig{
 				secret: env.GetString("JWT_SECRET", "example"),
 				// TODO: change time for whatever i want
-				exp: time.Hour * 24 * 7,
+				exp: time.Hour * 24,
 				iss: "project",
 			},
 		},

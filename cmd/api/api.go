@@ -55,10 +55,6 @@ type mailConfig struct {
 	mailTrap  mailTrapConfig
 }
 
-type sendGridConfig struct {
-	apiKey string
-}
-
 type mailTrapConfig struct {
 	apiKey string
 }
@@ -114,15 +110,15 @@ func (app *application) mount() http.Handler {
 
 		// REVIEWS ROUTES
 		r.Route("/reviews", func(r chi.Router) {
-			r.Use(app.AuthTokenMiddleware)
-			r.Post("/{professorID}", app.createReviewHandler)
+			r.Get("/{professorID}/tags", app.getTagsFromProfessorHandler)
+			r.With(app.AuthTokenMiddleware).Post("/{professorID}", app.createReviewHandler)
 		})
 
 		// NOTES ROUTES
 		r.Route("/notes", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 			r.Get("/{professorID}", app.getNotesHandler)
-			r.Post("/{professorID}", app.createNoteHandler)
+			/* r.With(app.RateLimitMiddleware). */ r.Post("/{professorID}", app.createNoteHandler)
 			r.Delete("/{noteID}", app.deleteNoteHandler)
 			r.Get("/{noteID}/view", app.getNoteByID)
 		})
@@ -135,7 +131,7 @@ func (app *application) mount() http.Handler {
 		r.Route("/search", func(r chi.Router) {
 			// uses a query parameter to search for a school
 			r.Get("/schools", app.getSchoolsHandler)
-
+			r.Get("/{professorID}/notes", app.getNoteByNameHandler)
 			// brings all the professors from a school
 			r.Get("/professor/{schoolID}", app.getProfessorFromSchoolsHandler)
 			r.Get("/professor", app.getProfessorsHandler)

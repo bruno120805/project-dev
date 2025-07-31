@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getProfessors, getSchoolByID } from "../api";
 import { School } from "../types/types";
 import PaginatedComponent from "../components/Paginated";
@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useProfessorsStore } from "@/store/professorsStore";
 
-const LIMIT = 8; // Definir el límite como constante global
+const LIMIT = 8; // límite por página
 
 const ProfessorsPage = () => {
   const professors = useProfessorsStore((state) => state.professors);
@@ -33,7 +33,6 @@ const ProfessorsPage = () => {
   useEffect(() => {
     const fetchSchools = async () => {
       const uniqueSchoolIds = new Set(professors.map((p) => p.school_id));
-
       const newSchools = new Map(schools);
 
       await Promise.all(
@@ -53,15 +52,39 @@ const ProfessorsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professors]);
 
+  // Resetear página si cambia búsqueda o lista de profesores
   useEffect(() => {
-    const totalPages = Math.ceil(professors.length / LIMIT);
+    setCurrentPage(1);
+  }, [text, professors]);
+
+  // Filtrar profesores según texto de búsqueda
+  const filteredProfessors = useMemo(() => {
+    if (!text.trim()) return professors;
+    return professors.filter((p) =>
+      p.name.toLowerCase().includes(text.toLowerCase()),
+    );
+  }, [professors, text]);
+
+  // Ordenar profesores por total_reviews descendente
+  const sortedProfessors = useMemo(() => {
+    return filteredProfessors
+      .slice()
+      .sort((a, b) => b.total_reviews - a.total_reviews);
+  }, [filteredProfessors]);
+
+  // Calcular paginación
+  const totalPages = Math.max(1, Math.ceil(sortedProfessors.length / LIMIT));
+  const startIndex = (currentPage - 1) * LIMIT;
+  const paginatedProfessors = sortedProfessors.slice(
+    startIndex,
+    startIndex + LIMIT,
+  );
+
+  useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(1);
     }
-  }, [professors.length, currentPage]);
-
-  const startIndex = (currentPage - 1) * LIMIT;
-  const paginatedProfessors = professors.slice(startIndex, startIndex + LIMIT);
+  }, [currentPage, totalPages]);
 
   return (
     <>
@@ -76,14 +99,20 @@ const ProfessorsPage = () => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          className="pl-9" // Padding izquierdo para dejar espacio al icono
+          className="pl-9" // Padding para icono
         />
       </div>
+
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 m-4">
         {paginatedProfessors.map((professor) => (
           <Card
             key={professor.id}
-            className="overflow-hidden transition-all hover:shadow-md hover:border-primary/50 group"
+            className="overflow-hidden cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group"
+            onClick={() =>
+              router.push(
+                `/professors/${professor.id}?name=${encodeURIComponent(professor.name)}`,
+              )
+            }
           >
             <CardContent className="p-5 flex flex-col items-center text-center">
               <div className="flex flex-col items-center gap-2 mb-3">
@@ -133,7 +162,7 @@ const ProfessorsPage = () => {
 
       <PaginatedComponent
         currentPage={currentPage}
-        totalPages={Math.max(1, Math.ceil(professors.length / LIMIT))}
+        totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
     </>

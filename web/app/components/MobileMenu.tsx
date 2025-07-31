@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { handleLogout } from "../api";
@@ -22,6 +27,7 @@ export function MobileMenu() {
           </Button>
         </SheetTrigger>
         <SheetContent side="right">
+          <SheetTitle className="text-center mt-4">Menú</SheetTitle>
           <div className="flex flex-col gap-4 mt-8 items-center">
             {user && user.username ? (
               <>

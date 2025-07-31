@@ -188,9 +188,10 @@ func (app *application) getSchoolsHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) getRandomSchoolsHandler(w http.ResponseWriter, r *http.Request) {
+	var limitOfSchools = 3
 	ctx := r.Context()
 
-	schools, err := app.store.Schools.GetRandomSchools(ctx, 3)
+	schools, err := app.store.Schools.GetRandomSchools(ctx, limitOfSchools)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return

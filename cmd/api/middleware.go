@@ -6,10 +6,20 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
+	"golang.org/x/time/rate"
+)
+
+var (
+	visitors  = make(map[string]*rate.Limiter)
+	mu        sync.Mutex
+	rateLimit = rate.Every(5 * time.Hour)
+	burst     = 1
 )
 
 type contextKey string
@@ -19,6 +29,12 @@ const userKey contextKey = "user"
 func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
+
+		if authHeader == "" {
+			app.unauthorizedResponse(w, r, fmt.Errorf("unauthorized"))
+			return
+		}
+
 		if authHeader != "" {
 			// Si el header está presente, valida el JWT
 			parts := strings.Split(authHeader, " ")
@@ -81,6 +97,31 @@ func (app *application) checkPostOwnership(requiredRole string, next http.Handle
 	})
 }
 
+func getVisitor(ip string) *rate.Limiter {
+	mu.Lock()
+	defer mu.Unlock()
+
+	limiter, exists := visitors[ip]
+	if !exists {
+		limiter = rate.NewLimiter(rateLimit, burst)
+		visitors[ip] = limiter
+	}
+	return limiter
+}
+
+func (app *application) RateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := r.RemoteAddr
+
+		if limiter := getVisitor(ip); !limiter.Allow() {
+			app.rateLimitExceededResponse(w, r, "5 minutos")
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 // func(app *application) getSessionUser(r *http.Request) *User {
 //   session, _ := gothic.Store.Get(r, "session")
 //   if user, ok := session.Values["userID"]
@@ -92,7 +133,6 @@ func (app *application) getSessionUser(r *http.Request) (goth.User, error) {
 		return goth.User{}, err
 	}
 
-	fmt.Printf("Session: %+v", session)
 	u := session.Values["user"]
 	if u == nil {
 		return goth.User{}, fmt.Errorf("user is not authenticated")

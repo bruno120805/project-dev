@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS reviews (
   difficulty INTEGER NOT NULL CHECK (
     difficulty BETWEEN 1
     AND 10
-  ) created_at TIMESTAMP DEFAULT NOW(),
-
-)
+  ),
+  created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW()
+);

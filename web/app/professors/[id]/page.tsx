@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 export default function ProfessorProfile() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [schoolName, setSchoolName] = useState<string>("");
   const reviewsPerPage = 5;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,12 +110,14 @@ export default function ProfessorProfile() {
         {/* Botones de acción */}
         <div className="flex flex-wrap gap-3">
           <Button
+            disabled={!user?.username}
             onClick={() => router.push(`/form/${professorId}`)}
             className="bg-[#0a1629] hover:bg-[#1a2639]"
           >
             Calificar
           </Button>
           <Button
+            disabled={!user?.username}
             onClick={() => {
               setProfessorName(professorName as string);
               router.push(`/notes/${professorId}`);

@@ -19,13 +19,23 @@ export const NoteSchema = z.object({
   id: z.number(),
   subject: z.string(),
   title: z.string(),
-  Content: z.string(),
+  content: z.string(),
   files_url: z.array(z.string().url()),
   user_id: z.number(),
   professor_id: z.number(),
   created_at: z.string(), // o z.coerce.date() si deseas convertir string a Date
 });
 export type Note = z.infer<typeof NoteSchema>;
+
+export const fileSchema = z.instanceof(File);
+
+export const NotesFormSchema = z.object({
+  subject: z.string(),
+  title: z.string(),
+  content: z.string(),
+  files: z.array(fileSchema),
+});
+export type NotesForm = z.infer<typeof NotesFormSchema>;
 
 // Role
 export const RoleSchema = z.object({
@@ -77,6 +87,7 @@ export const ReviewSchema = z.object({
   professorName: z.string(),
   rating: z.number().min(1).max(5),
   would_take_again: z.boolean(),
+  tags: z.array(z.string()),
 });
 export type Review = z.infer<typeof ReviewSchema>;
 
