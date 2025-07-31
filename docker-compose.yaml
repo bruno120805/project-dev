@@ -3,13 +3,30 @@ services:
     image: postgres:16.3
     container_name: postgres-db
     environment:
-      - POSTGRES_DB=project
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DB_ADDR=${DB_ADDR}
+    volumes:
+      - .:/app
+    working_dir: /app
 
 volumes:
   db-data:
