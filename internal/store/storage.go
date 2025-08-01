@@ -41,11 +41,13 @@ type Storage struct {
 	Reviews interface {
 		CreateReview(ctx context.Context, userID int64, r *Review) error
 		GetProfessorReviews(ctx context.Context, professorID int64) ([]*Review, error)
+		GetTagsFromProfessor(ctx context.Context, professorID int64) ([]string, error)
 	}
 	Notes interface {
 		Create(ctx context.Context, userID int64, note *Note) error
 		GetNoteByID(ctx context.Context, noteID int64) (*Note, error)
 		Delete(ctx context.Context, noteID int64) error
+		GetNotesByName(ctx context.Context, fq PaginatedFeedQuery, professorID int64) ([]*Note, error)
 		GetNotes(ctx context.Context, professorID int64) ([]*Note, error)
 	}
 }
