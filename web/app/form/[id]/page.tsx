@@ -22,10 +22,16 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import TeacherFeedback from "@/app/components/TeacherFeedback";
+import { useAuth } from "@/app/context/AuthContext";
+import NotAuthorized from "@/app/components/NotFoundPage";
+import { useProfessorStore } from "@/store/professorStore";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Page() {
   const router = useRouter();
   const { id } = useParams();
+  const { user } = useAuth();
+  const { professorName } = useProfessorStore((state) => state);
   const [formData, setFormData] = useState({
     text: "",
     subject: "",
@@ -61,7 +67,6 @@ export default function Page() {
   };
 
   const handleTagsChange = ({ selectedTags }: { selectedTags: string[] }) => {
-    console.log(selectedTags);
     setFormData((prev) => ({
       ...prev,
       tags: selectedTags,
@@ -81,10 +86,10 @@ export default function Page() {
       await createReview(formData, professorId);
       toast.success("Evaluación enviada con éxito");
 
-      router.push(`/professors/${professorId}`);
+      router.push(`/professors/${professorId}?name=${professorName}`);
     } catch (error: any) {
+      toast.error(error.message || "Error al enviar la evaluación");
       if (error instanceof Error) {
-        console.log(error);
         toast.error(error.message);
       } else {
         toast.error("Ocurrió un error desconocido");
@@ -92,13 +97,17 @@ export default function Page() {
     }
   };
 
+  if (!user?.username) {
+    return <NotAuthorized />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl shadow-lg">
         <div className="mb-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-lg text-primary hover:underline mt-2 ml-2"
+            className="flex items-center text-lg text-primary hover:underline mt-2 ml-2 cursor-pointer"
           >
             <ArrowLeft className="w-6 h-6 mr-2" />
           </button>
@@ -209,6 +218,7 @@ export default function Page() {
             <Button
               type="submit"
               className="text-lg py-6 px-8 w-full md:w-auto"
+              disabled={!formData.text.trim() || !formData.subject.trim()}
             >
               Enviar evaluación
             </Button>
