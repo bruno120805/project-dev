@@ -1,21 +1,20 @@
 "use client";
 
-import { getProfessorByID } from "@/app/api";
+import { getProfessorByID, getTagsFromProfessor } from "@/app/api";
 import PaginatedComponent from "@/app/components/Paginated";
+import ProfessorRating from "@/app/components/ProfessorRatingCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { Review } from "@/app/types/types";
-import { formatDate } from "@/app/utils/formatDate";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useProfessorStore } from "@/store/professorStore";
-import { ArrowLeft, Calendar, ChevronDown } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ProfessorProfile() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [schoolName, setSchoolName] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
   const reviewsPerPage = 5;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,10 +26,15 @@ export default function ProfessorProfile() {
 
   useEffect(() => {
     const fetchReviews = async () => {
-      const data = await getProfessorByID(professorId);
-      setReviews(data);
+      const [professorData, tagsData] = await Promise.all([
+        getProfessorByID(professorId),
+        getTagsFromProfessor(professorId),
+      ]);
+      setTags(tagsData);
+      setReviews(professorData);
     };
 
+    setProfessorName(professorName as string);
     fetchReviews();
   }, [professorId]);
 
@@ -69,11 +73,11 @@ export default function ProfessorProfile() {
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <div className="space-y-6">
         {/* Encabezado del profesor */}
+        <ArrowLeft
+          onClick={() => router.push("/")}
+          className="cursor-pointer mb-4"
+        />
         <div className="space-y-2">
-          <ArrowLeft
-            onClick={() => router.back()}
-            className="w-6 h-6 mr-2 cursor-pointer"
-          />
           <h1 className="text-3xl md:text-4xl font-bold text-[#0a1629]">
             {professorName}
           </h1>
@@ -106,6 +110,32 @@ export default function ProfessorProfile() {
             </span>
           </div>
         </div>
+        {Array.isArray(tags) && tags.length > 0 ? (
+          <div className="flex-1 flex flex-col items-center py-4 sm:py-0">
+            <span className="text-lg font-semibold text-[#0a1629]">
+              Etiquetas
+            </span>
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="uppercase px-3 py-1 bg-gray-200 rounded-full text-sm text-[#0a1629]"
+                >
+                  {tag.replaceAll("-", " ")}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center py-4 sm:py-0">
+            <span className="text-lg font-semibold text-[#0a1629]">
+              Etiquetas
+            </span>
+            <div className="text-sm text-gray-500 mt-2">
+              Sin etiquetas disponibles
+            </div>
+          </div>
+        )}
 
         {/* Botones de acción */}
         <div className="flex flex-wrap gap-3">
@@ -119,7 +149,6 @@ export default function ProfessorProfile() {
           <Button
             disabled={!user?.username}
             onClick={() => {
-              setProfessorName(professorName as string);
               router.push(`/notes/${professorId}`);
             }}
             variant="outline"
@@ -135,36 +164,13 @@ export default function ProfessorProfile() {
             {reviews?.length} calificaciones de estudiantes
           </h2>
 
-          <div className="relative w-52">
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              size="sm"
-            >
-              Todos los cursos
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </Button>
-          </div>
-
           {/* Tarjetas de calificaciones */}
           {paginatedReviews?.map((review) => (
-            <Card key={review.id} className="p-4">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
-                    <span className="text-white text-xs">@</span>
-                  </div>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <div className="font-medium">{review.subject}</div>
-                  <p className="text-sm text-muted-foreground">{review.text}</p>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {formatDate(review.created_at)}
-                  </div>
-                </div>
-              </div>
-            </Card>
+            <ProfessorRating
+              key={review.id}
+              review={review}
+              professorName={professorName}
+            />
           ))}
 
           {/* Paginación */}
