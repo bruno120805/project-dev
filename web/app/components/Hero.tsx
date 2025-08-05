@@ -1,16 +1,14 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProfessorsStore } from "@/store/professorsStore";
 import { useSchoolsStore } from "@/store/schoolsStore";
 import Image from "next/image";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getProfessors, getRandomSchools, getSchools } from "../api";
 import { RandomSchool } from "../types/types";
-import { MultiTypewriter } from "./MultiTypeWriter";
 
 export default function LandingPage() {
   const [labelText, setLabelText] = useState<string>(
@@ -22,12 +20,6 @@ export default function LandingPage() {
   const [query, setQuery] = useState<string>("");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const multiTexts = [
-    "Califica a tus profesores y ayuda a otros estudiantes",
-    "Encuentra reseñas honestas y útiles de tus maestros",
-    "Comparte y descarga apuntes que te faciliten el estudio",
-    "Construyamos juntos una comunidad educativa confiable",
-  ];
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -99,12 +91,9 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
             <div className="flex flex-col gap-8">
               <div className="space-y-4">
-                <MultiTypewriter
-                  texts={multiTexts}
-                  speed={60}
-                  pauseBetween={3000}
-                  className="text-3xl md:text-4xl font-bold text-primary"
-                />
+                <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+                  Califica tu profesor y encuentra los apuntes de sus materias.
+                </h1>
                 <p className="text-lg text-muted-foreground">{labelText}</p>
               </div>
 
@@ -143,7 +132,7 @@ export default function LandingPage() {
                     {schools?.map((school) => (
                       <button
                         key={school.id}
-                        className="flex w-full max-w-md items-center gap-2 rounded-lg border p-4 text-left transition-colors hover:bg-accent cursor-pointer"
+                        className="flex w-full max-w-md items-center gap-2 rounded-lg border p-4 text-left transition-colors hover:bg-accent"
                         onClick={() => handleOnClick(school.id)}
                       >
                         <div className="h-4 w-4 rounded-full border " />
