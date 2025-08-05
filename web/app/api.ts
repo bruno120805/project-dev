@@ -23,6 +23,18 @@ export const getSchools = async (q: string) => {
   }
 };
 
+export const getNoteByID = async (q: string, professorId: number) => {
+  try {
+    const { data } = await axios.get(`${API_URL}/search/${professorId}/notes`, {
+      params: { q },
+    });
+    return data.data ?? [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
 export const getProfessors = async (q: string) => {
   try {
     const { data } = await axios.get(`${API_URL}/search/professor`, {
@@ -61,6 +73,9 @@ export const createNote = async (note: NotesForm, professorId: number) => {
 
     return data;
   } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error("No autorizado, por favor inicia sesión");
+    }
     throw new Error(error.response?.data?.error || "Error al crear la nota");
   }
 };
@@ -79,6 +94,9 @@ export const createReview = async (review: ReviewForm, professorId: number) => {
 
     return data;
   } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error("No autorizado, por favor inicia sesión");
+    }
     throw new Error(
       error.response?.data?.error || "Error al crear la evaluación",
     );
@@ -162,7 +180,7 @@ export const handleGoogleLogin = async () => {
 export const handleLogin = async ({ email, password }: Login) => {
   const {
     data: { data },
-  } = await axios.post<ApiResponse<{ token: string; user: Login }>>(
+  } = await axios.post<ApiResponse<{ token: string; user: User }>>(
     `${API_URL}/auth/login`,
     {
       email,
@@ -181,5 +199,29 @@ export const handleLogout = async (setUser: (user: User | null) => void) => {
     setUser(null);
   } catch (error) {
     console.error(error);
+  }
+};
+
+export const getTagsFromProfessor = async (professorId: number) => {
+  try {
+    const { data } = await axios.get(`${API_URL}/reviews/${professorId}/tags`);
+    return data.data;
+  } catch (error) {
+    console.error("Error al obtener las etiquetas del profesor:", error);
+    return [];
+  }
+};
+
+export const activateAccountUser = async (token: string) => {
+  try {
+    const { data } = await axios.put(`${API_URL}/users/activate/${token}`);
+
+    if (!data.ok) throw new Error(data?.error || "Error al activar la cuenta");
+
+    setTimeout(() => {
+      window.location.href = "/auth/login";
+    }, 3000);
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : "Error desconocido");
   }
 };

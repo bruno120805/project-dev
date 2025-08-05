@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Flag, Star, Users } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 import type { Review } from "../types/types";
 import { formatDate } from "../utils/formatDate";
 
@@ -55,19 +54,10 @@ const ProfessorRating = ({ review, professorName }: ProfessorRatingProps) => {
               </div>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <Flag className="w-4 h-4 mr-2" />
-            Reportar
-          </Button>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Course Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-400" />
@@ -79,20 +69,10 @@ const ProfessorRating = ({ review, professorName }: ProfessorRatingProps) => {
               {review.would_take_again ? "Obligatoria" : "No Obligatoria"}
             </Badge>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-600">Calificación Recibida:</span>
-            <span className="text-gray-900 font-medium">N/A</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">Interés en la Clase:</span>
-            <span className="text-gray-900 font-medium">N/A</span>
-          </div>
         </div>
 
         <Separator />
 
-        {/* Scores */}
         <div className="flex flex-wrap gap-3">
           <Badge
             className={`${getQualityColor(review.rating)} font-medium border px-2 py-1`}
@@ -108,7 +88,6 @@ const ProfessorRating = ({ review, professorName }: ProfessorRatingProps) => {
           </Badge>
         </div>
 
-        {/* Tags */}
         {review.tags && review.tags.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-gray-700">
@@ -128,7 +107,6 @@ const ProfessorRating = ({ review, professorName }: ProfessorRatingProps) => {
           </div>
         )}
 
-        {/* Comment */}
         {review.text && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-l-4 border-blue-200">
             <p className="text-gray-700 leading-relaxed text-sm">

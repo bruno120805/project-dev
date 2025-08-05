@@ -13,14 +13,20 @@ interface MateriaSelectorProps {
   selectedMateria: string | null;
   onMateriaChange: (materia: string | null) => void;
   notes: Note[];
+  maxSubjects?: number;
 }
 
 const SubjectSelector: React.FC<MateriaSelectorProps> = ({
   selectedMateria,
   onMateriaChange,
   notes,
+  maxSubjects,
 }) => {
   const uniqueSubjects = Array.from(new Set(notes.map((note) => note.subject)));
+
+  const limitedSubjects = maxSubjects
+    ? uniqueSubjects.slice(0, maxSubjects)
+    : uniqueSubjects;
 
   return (
     <DropdownMenu>
@@ -37,7 +43,7 @@ const SubjectSelector: React.FC<MateriaSelectorProps> = ({
         <DropdownMenuItem onClick={() => onMateriaChange(null)}>
           Todas las materias
         </DropdownMenuItem>
-        {uniqueSubjects.map((materia) => (
+        {limitedSubjects.map((materia) => (
           <DropdownMenuItem
             key={materia}
             onClick={() => onMateriaChange(materia)}
@@ -45,6 +51,11 @@ const SubjectSelector: React.FC<MateriaSelectorProps> = ({
             {materia}
           </DropdownMenuItem>
         ))}
+        {maxSubjects && uniqueSubjects.length > maxSubjects && (
+          <DropdownMenuItem disabled>
+            +{uniqueSubjects.length - maxSubjects} más...
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
