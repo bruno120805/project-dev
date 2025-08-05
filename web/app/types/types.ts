@@ -23,7 +23,7 @@ export const NoteSchema = z.object({
   files_url: z.array(z.string().url()),
   user_id: z.number(),
   professor_id: z.number(),
-  created_at: z.string(), // o z.coerce.date() si deseas convertir string a Date
+  created_at: z.string(),
 });
 export type Note = z.infer<typeof NoteSchema>;
 
