@@ -26,7 +26,9 @@ import {
 import { NotesForm } from "@/app/types/types";
 import { useParams, useRouter } from "next/navigation";
 import { createNote } from "@/app/api";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import NotAuthorized from "@/app/components/NotFoundPage";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function NoteForm() {
   const [formData, setFormData] = useState<NotesForm>({
@@ -35,12 +37,13 @@ export default function NoteForm() {
     title: "",
     files: [],
   });
-
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const params = useParams();
   const professorId = parseInt(params.id as string, 10);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const handleInputChange = (
     field: keyof Omit<NotesForm, "files" | "files_url">,
@@ -115,8 +118,10 @@ export default function NoteForm() {
       toast.success("Apunte subido con éxito");
       router.push(`/notes/${professorId}`);
     } catch (error: any) {
+      setError(error.message);
+      console.error("Error al subir el apunte:", error);
       if (error.message === "file too large") {
-        toast.error("El archivo es demasiado grande. Máximo 10MB.");
+        toast.error("El archivo es demasiado grande. Máximo 6MB.");
       } else if (error.message == "invalid file extension") {
         toast.error("Extensión de archivo no válida. Solo PDF e imágenes.");
       } else {
@@ -124,6 +129,10 @@ export default function NoteForm() {
       }
     }
   };
+
+  if (!user?.username) {
+    return <NotAuthorized />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -199,6 +208,10 @@ export default function NoteForm() {
               <Label className="text-sm font-semibold text-gray-700">
                 Archivos
               </Label>
+              <span className="text-slate-400 text-sm italic">
+                Nota: Sube PDFs e imagenes sobre apuntes, evita subir cosas
+                indebidas, ayuda a los demas estudiantes.
+              </span>
 
               {/* Drag and Drop Zone */}
               <div
@@ -295,20 +308,33 @@ export default function NoteForm() {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6">
-              <Button
-                type="submit"
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                disabled={
-                  !formData.title.trim() ||
-                  !formData.subject.trim() ||
-                  !formData.content.trim()
-                }
-              >
-                <Upload className="mr-2 h-5 w-5" />
-                Subir apunte
-              </Button>
-            </div>
+            {error ? (
+              <div className="pt-6">
+                <Button
+                  type="submit"
+                  className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                  disabled={true}
+                >
+                  <Upload className="mr-2 h-5 w-5" />
+                  Subir apunte
+                </Button>
+              </div>
+            ) : (
+              <div className="pt-6">
+                <Button
+                  type="submit"
+                  className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                  disabled={
+                    !formData.title.trim() ||
+                    !formData.subject.trim() ||
+                    !formData.content.trim()
+                  }
+                >
+                  <Upload className="mr-2 h-5 w-5" />
+                  Subir apunte
+                </Button>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>
