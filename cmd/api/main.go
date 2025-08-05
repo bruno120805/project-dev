@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/bruno120805/project/internal/auth"
@@ -34,9 +35,13 @@ import (
 // @name						Authorization
 // @description
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	if _, err := os.Stat(".env"); err == nil {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatalf("Error loading .env file: %v", err)
+		}
+	} else {
+		log.Println(".env file not found, continuing without loading it")
 	}
 
 	cfg := config{
