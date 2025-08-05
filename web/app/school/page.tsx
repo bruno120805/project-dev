@@ -18,6 +18,7 @@ import { useDebounce } from "../hooks/use-debounce";
 import { getSchools } from "../api";
 import { School as SchoolType } from "../types/types";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 export default function SchoolPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,8 +28,6 @@ export default function SchoolPage() {
   const [filteredSchools, setFilteredSchools] = useState<SchoolType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const schools = useSchoolsStore((state) => state.schools);
-
-  // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   // Fetch schools when debounced search term changes
@@ -46,7 +45,9 @@ export default function SchoolPage() {
         setFilteredSchools(data);
         setSearchedUniversity(debouncedSearchTerm.toUpperCase());
       } catch (error) {
-        console.error("Error fetching schools:", error);
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
         setFilteredSchools([]);
       } finally {
         setIsLoading(false);
